@@ -1,4 +1,4 @@
-# 🎨 aesthify
+# 🎨 Aesthify
 
 > **Quantitative Aesthetic Evaluation for Interior Design Layouts**  
 > *Research-grade scoring engine for interior design analysis.*
@@ -11,7 +11,7 @@
 
 ## ✨ Overview
 
-**aesthify** is a computer vision-powered framework designed to quantify and evaluates the visual aesthetics of images, especially focused on room layouts and interior designs.  
+**Aesthify** is a computer vision-powered framework designed to quantify and evaluates the visual aesthetics of images, especially focused on room layouts and interior designs.  
 It uses a combination of deep learning (YOLOv8 + Roboflow) for object detection and a handcrafted quantitative model based on Gestalt principles to score images across seven aesthetic dimensions.
 
 🔎 **Focus Areas**:
