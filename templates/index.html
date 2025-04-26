@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Aesthetic Evaluation</title>
+    <link rel="icon" type="image/png" href="/static/logo.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Kirang+Haerang&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/static/styles.css">
+    <style>
+      /* Inline styling for video and canvas borders */
+      #video, #canvas {
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container mt-5">
+      <img src="/static/logo.png" alt="Logo" class="mx-auto d-block" style="max-width: 100px;">
+      <!-- Main Title using Kirang Haerang font -->
+      <h1 style="font-family: 'Kirang Haerang', cursive; margin: 0; font-size: 2.5rem;">Aesthify</h1><br>
+      <!-- Subheading in a font that matches the body font (Inter) -->
+      <h4 style="font-family: 'Inter', sans-serif; margin-top: 5px;">Aesthetic Evaluation</h4>
+      <!-- Option Buttons -->
+      <div class="text-center mb-3">
+        <button id="uploadOption">Upload Image</button>
+        <button id="captureOption">Click Image</button>
+      </div>
+      
+      <!-- Upload Section -->
+      <div id="uploadSection" style="display: none;" class="text-center">
+        <input type="file" id="imageInput" style="display: none;" accept="image/*" />
+        <button id="uploadButton">Choose File</button>
+      </div>
+      
+      <!-- Capture Section -->
+      <div id="captureSection" style="display: none;" class="text-center">
+        <video id="video" width="400" height="300" autoplay style="display: none;"></video>
+        <button id="startCameraButton">Start Camera</button>
+        <button id="captureButton" style="display: none;">Capture</button>
+        <canvas id="canvas" width="400" height="300" style="display: none;"></canvas>
+      </div>
+      
+      <!-- Image Preview -->
+      <div id="imagePreviewContainer" style="display: none; margin-top: 20px;" class="text-center">
+        <img id="previewImage" src="#" class="img-fluid mx-auto d-block" alt="Preview" />
+      </div>
+      
+      <!-- Evaluate Button -->
+      <button id="evaluateButton" style="display: none;">Evaluate</button>
+      <h5 id="loadingText" style="display: none;">Loading...</h5>
+      <!-- Evaluation Result -->
+      <div id="evaluationResult" class="mt-3" style="display: none;">
+        <h4>Evaluation Results:</h4>
+        <pre id="evalResultText"></pre>
+      </div>
+      <!-- Image Display -->
+      <div id="labeledImageContainer" class="text-center" style="display: none;">
+        <h5>Detected Objects:</h5>
+        <img id="labeledImageResult" class="img-fluid" alt="Detected Layout" />
+      </div>      
+    </div>
+    
+    <!-- JS Dependencies -->
+    <script
+      src="https://code.jquery.com/jquery-3.5.1.min.js"
+      integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0="
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.bundle.min.js"
+      integrity="sha384-1CmrxMRARb6aLqgBO7jw1C8y2CRB4hr4/hE2XZ6tB66ZRv/K9E0hxkz3Hb9C7wXl"
+      crossorigin="anonymous"
+    ></script>
+    
+    <!-- Load Updated JavaScript -->
+    <script src="/static/script.js"></script>
+  </body>
+</html>

@@ -1,0 +1,64 @@
+"""
+routes/evaluation.py
+
+Runs aesthetic scoring on an uploaded image and returns evaluation metrics.
+    Accepts:
+        - POST JSON or FormData with 'image_data' (base64)
+    Returns:
+        - JSON dict of all scores + average aesthetic value
+"""
+
+from flask import request, jsonify
+
+import os
+import pandas as pd
+
+from routes import routes  # reference to blueprint
+from utils.main_pipeline import process_top
+from utils.config import RESULTS_DUMP
+
+import traceback
+
+@routes.route('/evaluate', methods=['POST'])
+def evaluate():
+    try:
+        # Accept base64 image from form-data or JSON
+        image_data = request.form.get('image_data') or request.json.get('image_data')
+        if not image_data:
+            return jsonify({"error": "Missing 'image_data'"}), 400
+
+        # Validate payload size
+        request_size = len(image_data) / (1024 * 1024)  # in MB
+        if request_size > 32:
+            return jsonify({"error": "Image too large"}), 413
+
+        print("[DEBUG] Starting process_top()...")
+        result = process_top(image_data)
+        print("[DEBUG] Finished process_top()")
+
+        result_copy = result.copy()
+
+        # Setup Excel logging
+        image_id = 1
+
+        if os.path.isfile(RESULTS_DUMP):
+            df = pd.read_excel(RESULTS_DUMP)
+            last_id = df["Image_ID"].iloc[-1]
+            image_id = last_id + 1
+            result["Image_ID"] = image_id
+            df = pd.concat([df, pd.DataFrame.from_records([result])], ignore_index=True)
+        else:
+            result["Image_ID"] = image_id
+            df = pd.DataFrame.from_records([result])
+
+        df.to_excel(RESULTS_DUMP, index=False)
+
+        # Return result without Excel metadata
+        return jsonify(result_copy)
+
+    except Exception as e:
+        print("\n [ERROR] Evaluation failed:")
+        traceback.print_exc() 
+        return jsonify({
+            "error": str(e)
+        }), 500

@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.env
+.venv/
+venv/
+env/
+
+# Flask cache
+instance/
+
+# System files
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# Models and results (optional if large)
+models/
+results/
+*.egg-info/
+
+# Ignore Jupyter stuff if you ever use
+.ipynb_checkpoints/
+
+# Environment variables
+.env
