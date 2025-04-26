@@ -1,11 +1,3 @@
-"""
-===============================================================================
-Python Project Dependencies
-===============================================================================
-List of external libraries needed for project execution.
-Install via: pip install -r requirements.txt
-"""
-
 Flask>=2.2.2               # Web framework for server-side apps
 opencv-python>=4.8.0.74    # Computer vision tools
 numpy>=1.24.0              # Numerical computing
