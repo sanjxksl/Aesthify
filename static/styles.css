@@ -1,62 +1,53 @@
-/* 
-  BODY STYLES
-  - Cream background to match your overall mockup
-  - Default font set to 'Inter'
-*/
+/* ============================================================================
+Aesthify Frontend Styling
+============================================================================ */
+
+/* ========== General Body Styling ========== */
 body {
   margin: 0;
   padding: 0;
-  background-color: #fdfbf6; /* Cream/off-white background */
+  background-color: #fdfbf6; /* Light cream background */
   font-family: 'Inter', sans-serif;
-  color: #000000; /* Black text */
+  color: #000000;
 }
 
-#optTable{
-  background-color: #fdfbf6; /* Cream/off-white background */
+/* Table Styling */
+#optTable {
+  background-color: #fdfbf6;
   font-family: 'Inter', sans-serif;
-  color: #000000; /* Black text */
+  color: #000000;
 }
-/* 
-  CONTAINER
-  - Main container updated to background #f8f8f0
-  - Rounded corners and subtle box shadow for a soft aesthetic
-  - Centered with a max-width
-*/
+
+/* ========== Container and Card ========== */
 .container {
   max-width: 800px;
   margin: 50px auto;
   padding: 40px;
-  background-color: #f8f8f0; /* Updated container color */
+  background-color: #f8f8f0;
   border-radius: 20px;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
   text-align: center;
 }
 
-/* 
-  HEADINGS
-  - Using Kirang Haerang for the "AESTHIFY" brand heading
-  - Centered with black color
-*/
+.card {
+  border: none;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  background-color: #f8f8f0;
+}
+
+/* ========== Heading ========== */
 h1 {
   text-align: center;
-  font-family: 'Kirang Haerang', cursive; /* Aesthetify font */
+  font-family: 'Kirang Haerang', cursive;
   color: #000000;
 }
 
-.option-menu {
-  margin-bottom: 20px;
-}
-
-/* 
-  BUTTONS
-  - Orange background for all buttons, white text
-  - Hover effect with a darker orange for emphasis
-*/
+/* ========== Buttons ========== */
 button {
   padding: 10px 20px;
   margin: 10px;
   border: none;
-  background-color: #FF6A00; /* Orange color */
+  background-color: #FF6A00;
   color: white;
   border-radius: 5px;
   cursor: pointer;
@@ -64,33 +55,28 @@ button {
 }
 
 button:hover {
-  background-color: #a44302; /* Darker orange on hover */
+  background-color: #a44302;
 }
+
 button:active {
-  background-color: rgb(110, 25, 1); /* Orange color */
+  background-color: rgb(110, 25, 1);
 }
-/* 
-  RESULT SECTION
-  - Text styled in a slightly darker grey (#333333)
-*/
+
+/* ========== Result Section ========== */
 .result {
   margin-top: 20px;
   text-align: left;
   color: #333333;
 }
 
-/* 
-  PREVIEW CONTAINER
-  - Centered with fixed dimensions and hidden overflow for images, videos, or canvas elements
-  - Light grey border and rounded corners
-*/
+/* ========== Preview Container ========== */
 .preview {
   position: relative;
   margin: 20px auto;
   width: 400px;
   height: 300px;
   overflow: hidden;
-  border: 1px solid #ccc; /* Light grey border */
+  border: 1px solid #ccc;
   border-radius: 10px;
 }
 
@@ -108,32 +94,18 @@ button:active {
   object-fit: cover;
 }
 
+/* Placeholder Text */
 .placeholder {
   color: #999999;
   font-style: italic;
 }
 
+/* List */
 .list-unstyled li {
   list-style-type: none;
 }
 
-/* 
-  CARD ELEMENT
-  - Updated to match container aesthetics
-  - No border, subtle box shadow, and background of #f8f8f0
-*/
-.card {
-  border: none;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-  background-color: #f8f8f0; /* Matching main container color */
-}
-
-/* 
-  NAV TABS
-  - Default tab links styled in grey (#333333)
-  - Active tab uses an orange background (#ff6600) with white text
-  - Hover state uses a slightly darker red-orange (#ff4d4d)
-*/
+/* ========== Navigation Tabs ========== */
 .nav-tabs .nav-item .nav-link {
   color: #333333;
   border: none;
@@ -141,10 +113,10 @@ button:active {
 
 .nav-tabs .nav-item .nav-link.active {
   color: #ffffff;
-  background-color: #ff6600; /* Orange color for active tab */
+  background-color: #ff6600;
   border-radius: 5px;
 }
 
 .nav-tabs .nav-item .nav-link:hover {
-  background-color: #ff4d4d; /* Darker red-orange on hover */
+  background-color: #ff4d4d;
 }

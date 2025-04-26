@@ -1,380 +1,200 @@
-import base64
+"""
+===============================================================================
+Aesthify Image Processing Utilities
+===============================================================================
+
+Provides low-level utilities for:
+- Decoding base64 images
+- Encoding images with labels
+- Edge detection
+- Element and body segmentation
+- Color and size extraction
+- Object detection and cropping
+
+These utilities form the core building blocks for aesthetic scoring pipelines.
+"""
+
+# ========== IMPORTS ==========
+
 import numpy as np
 import cv2
+import base64
 
-from utils.detection_pipeline import run_yolo_detection
-from utils.config import YOLO_CONFIDENCE_THRESHOLD, MIN_AREA_RATIO
+# ========== FUNCTIONS ==========
 
-
-def edge_detect(image):
+def decode_image(base64_data: str) -> np.ndarray:
     """
-    Applies adaptive Canny edge detection followed by morphological cleanup.
+    Decode a base64-encoded image string into a numpy BGR image.
 
-    Steps:
-    - Converts image to grayscale.
-    - Applies Gaussian blur to smooth noise.
-    - Computes adaptive thresholds using image median.
-    - Applies Canny edge detector with adaptive thresholds.
-    - Uses dilation and erosion to clean up the edge map.
-
-    Parameters:
-    -----------
-    image : np.ndarray
-        Input image (BGR format).
+    Args:
+        base64_data (str): Base64-encoded image string.
 
     Returns:
-    --------
-    edges : np.ndarray
-        Binary edge map with refined contours.
+        np.ndarray: Decoded BGR image.
     """
-    ksize = 3
-    kernel = np.ones((ksize, ksize), np.uint8)
+    # Remove potential header if present (e.g., "data:image/jpeg;base64,...")
+    img_str = base64_data.split(',', 1)[1] if ',' in base64_data else base64_data
+    img_data = base64.b64decode(img_str)
+    nparr = np.frombuffer(img_data, np.uint8)
 
-    # Convert to grayscale
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    # Decode image using OpenCV
+    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+    return img
 
-    # Smoothen using Gaussian blur
-    gray_blurred = cv2.GaussianBlur(gray, (5, 5), sigmaX=0)
+def encode_image_with_labels(img: np.ndarray, bboxes: list, labels: list) -> str:
+    """
+    Encode a BGR image into base64 after drawing bounding boxes and labels.
 
-    # Use median of blurred image for adaptive thresholds
-    v = np.median(gray_blurred)
-    lower = int(max(0, 0.66 * v))
-    upper = int(min(255, 1.33 * v))
+    Args:
+        img (np.ndarray): BGR image.
+        bboxes (list): List of [x1, y1, x2, y2] bounding boxes.
+        labels (list): List of label strings corresponding to boxes.
 
-    # Canny edge detection
-    edges = cv2.Canny(gray_blurred, lower, upper)
+    Returns:
+        str: Base64-encoded JPEG image.
+    """
+    # Make a copy of the input image to annotate
+    img_copy = img.copy()
 
-    # Morphological cleanup to fill gaps and refine structure
-    edges = cv2.dilate(edges, kernel, iterations=1)
-    edges = cv2.erode(edges, kernel, iterations=1)
-    edges = cv2.dilate(edges, kernel, iterations=1)
+    # Draw each bounding box and label
+    for bbox, label in zip(bboxes, labels):
+        x1, y1, x2, y2 = map(int, bbox)
+        cv2.rectangle(img_copy, (x1, y1), (x2, y2), (0, 255, 0), 2)
+        cv2.putText(img_copy, label, (x1, max(y1 - 10, 0)), 
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (36, 255, 12), 2)
+
+    # Encode annotated image to JPEG
+    _, buffer = cv2.imencode('.jpg', img_copy)
+    img_base64 = base64.b64encode(buffer).decode('utf-8')
+
+    return img_base64
+
+def edge_detect(img: np.ndarray) -> np.ndarray:
+    """
+    Perform edge detection on an image using Canny algorithm.
+
+    Args:
+        img (np.ndarray): Input BGR image.
+
+    Returns:
+        np.ndarray: Edge-detected binary image.
+    """
+    # Convert BGR image to grayscale
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+    # Apply Gaussian blur to reduce noise
+    blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+
+    # Detect edges
+    edges = cv2.Canny(blurred, threshold1=50, threshold2=150)
 
     return edges
 
-import base64
-import cv2
-import numpy as np
-
-def decode_image(image_data: str) -> np.ndarray:
+def identify_elements_and_body(edges: np.ndarray) -> tuple[list[np.ndarray], np.ndarray]:
     """
-    Decodes base64 image (optionally prefixed with data URI) to a NumPy array.
-    Handles both "data:image/jpeg;base64,..." and plain base64 strings.
-    """
-    try:
-        if ',' in image_data:
-            b64 = image_data.split(',', 1)[1]
-        else:
-            b64 = image_data  # fallback for raw base64
-        img_bytes = base64.b64decode(b64)
-        img_array = np.frombuffer(img_bytes, np.uint8)
-        img = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
-        if img is None:
-            raise ValueError("OpenCV imdecode failed")
-        return img
-    except Exception as e:
-        raise ValueError(f"decode_image error: {e}")
-
-def encode_image_with_labels(image, bboxes, labels):
-    vis_img = image.copy()
-    font = cv2.FONT_HERSHEY_SIMPLEX
-
-    for (x1, y1, x2, y2), label in zip(bboxes, labels):
-        cv2.rectangle(vis_img, (x1, y1), (x2, y2), (0, 255, 0), 2)
-        cv2.putText(vis_img, label, (x1, y1 - 10), font, 0.5, (255, 0, 0), 2)
-
-    _, buffer = cv2.imencode('.jpg', vis_img)
-    encoded = base64.b64encode(buffer).decode('utf-8')  # No prefix added
-    return encoded
-
-def detect_and_crop_objects(image: np.ndarray,
-                            conf_thresh: float = 0.3,
-                            visualize: bool = False):
-    """
-    Runs YOLOv8 on an image to detect objects and extract cropped segments,
-    along with a dynamic body bounding box created from the convex hull
-    of all detected object coordinates.
-
-    Parameters:
-    -----------
-    image : np.ndarray
-        Input image in BGR format (as used by OpenCV).
-    conf_thresh : float
-        Minimum confidence score for YOLO detections to be considered.
-    visualize : bool
-        If True, overlays the detected boxes and dynamic body on the image.
-
-    Returns:
-    --------
-    segments : list of dict
-        Each dict contains:
-            - "crop": Cropped image region (np.ndarray)
-            - "centroid": Tuple (cx, cy) normalized to image dimensions
-            - "bbox": Bounding box tuple (x1, y1, x2, y2)
-            - "conf": Detection confidence (float)
-            - "cls": Class ID (int)
-
-    body_bbox : tuple
-        Dynamic bounding box for the "body" computed from convex hull,
-        formatted as (x1, y1, x2, y2). Falls back to full image if no objects.
-    """
-    results = run_yolo_detection(image)
-    h, w = image.shape[:2]
-    segments = []
-
-    if results.boxes is None or len(results.boxes) == 0:
-        print("[WARN] No objects detected by YOLO.")
-        return [], (0, 0, w, h)  # fallback: full image
-
-    all_points = []
-
-    for box in results.boxes:
-        if float(box.conf) < conf_thresh:
-            continue
-        x1, y1, x2, y2 = map(int, box.xyxy[0].tolist())
-        crop = image[y1:y2, x1:x2].copy()
-        cx = ((x1 + x2) / 2) / w
-        cy = ((y1 + y2) / 2) / h
-        segments.append({
-            "crop": crop,
-            "centroid": (cx, cy),
-            "bbox": (x1, y1, x2, y2),
-            "conf": float(box.conf),
-            "cls": int(box.cls)
-        })
-        all_points.extend([[x1, y1], [x2, y2]])
-
-    # Construct dynamic body from convex hull around elements
-    all_points = np.array(all_points)
-    if len(all_points) >= 3:
-        hull = cv2.convexHull(all_points)
-        x, y, w_body, h_body = cv2.boundingRect(hull)
-        body_bbox = (x, y, x + w_body, y + h_body)
-    else:
-        body_bbox = (0, 0, w, h)
-
-    # Optional overlay visualization
-    if visualize:
-        vis_img = image.copy()
-        for seg in segments:
-            x1, y1, x2, y2 = seg["bbox"]
-            cv2.rectangle(vis_img, (x1, y1), (x2, y2), (0, 255, 0), 2)
-        x1, y1, x2, y2 = body_bbox
-        if visualize:
-            from matplotlib import pyplot as plt
-            plt.figure(figsize=(10, 6))
-            plt.imshow(cv2.cvtColor(vis_img, cv2.COLOR_BGR2RGB))
-            plt.title("Detection Overlay")
-            plt.axis('off')
-            plt.tight_layout()
-            plt.show()
-
-    return segments, body_bbox
-
-def identify_elements_and_body(image, fallback_boxes=None, min_area_ratio = MIN_AREA_RATIO):
-    """
-    Identifies meaningful element contours and body contour using edge map.
-    Falls back to bounding boxes (e.g., YOLO) if contours are insufficient.
-
-    Parameters:
-    -----------
-    image : np.ndarray
-        Input image (BGR format).
-    fallback_boxes : list of dict (optional)
-        List of dicts with "bbox" key to use as fallback if no contours are found.
-    min_area_ratio : float
-        Minimum contour area relative to image size for it to be considered valid.
-
-    Returns:
-    --------
-    element_contours : list of np.ndarray
-        List of contours representing detected elements.
-    body_contour : np.ndarray or None
-        The largest contour treated as "body" of the layout.
-    eroded_mask : np.ndarray
-        Binary mask for body after refinement.
-    """
-    edges = edge_detect(image)
-    height, width = image.shape[:2]
-    min_area = (height * width) * min_area_ratio
-    element_contours = []
-
-    # Find external contours
-    contours, _ = cv2.findContours(edges.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-    body_contour = None
-    max_area = 0
-
-    # Classify contours based on area
-    for cnt in contours:
-        area = cv2.contourArea(cnt)
-        if area < min_area:
-            continue
-        if area > max_area:
-            if body_contour is not None:
-                element_contours.append(body_contour)
-            body_contour = cnt
-            max_area = area
-        else:
-            element_contours.append(cnt)
-
-    # Fallback mechanism using detection boxes if no good contours
-    if body_contour is None or len(element_contours) == 0:
-        print("[WARN] No usable contours from edge map. Falling back to YOLO boxes.")
-        element_contours = []
-        all_points = []
-
-        for box in fallback_boxes or []:
-            x1, y1, x2, y2 = box["bbox"]
-            cnt = np.array([[[x1, y1]], [[x2, y1]], [[x2, y2]], [[x1, y2]]])
-            element_contours.append(cnt)
-            all_points.extend(cnt[:, 0])
-
-        if all_points:
-            hull = cv2.convexHull(np.array(all_points))
-            body_contour = hull
-        else:
-            print("[ERROR] Fallback boxes were also empty.")
-            return [], None, None
-
-    # Create mask from body contour
-    mask = np.zeros((height, width), dtype=np.uint8)
-    cv2.drawContours(mask, [body_contour], -1, 255, thickness=cv2.FILLED)
-
-    # Refine mask using morphological operations
-    kernel = np.ones((3, 3), np.uint8)
-    mask = cv2.erode(mask, kernel, iterations=1)
-    mask = cv2.dilate(mask, kernel, iterations=4)
-
-    # Final cleanup of body mask
-    final_contours, _ = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    if final_contours:
-        body_contour = final_contours[0]
-
-    eroded_mask = cv2.erode(mask, kernel, iterations=5)
-    return element_contours, body_contour, eroded_mask
-
-def extract_color_and_size_information(image, element_contours, body_contour):
-    """
-    Extracts HSV color, area, and centroid information from both element and body contours.
-
-    Parameters:
-    image : np.ndarray
-        Input BGR image used for color and shape extraction.
-    element_contours : list of np.ndarray
-        List of element contours to analyze.
-    body_contour : np.ndarray
-        Contour representing the full image body or layout region.
-
-    Returns:
-    dict
-        {
-            "element_colors": list of (H, S, V) color tuples for each element,
-            "element_sizes": list of contour areas for elements,
-            "body_color": average HSV color of body region,
-            "element_centroids": list of (x, y) centroid positions (normalized),
-            "body_size": area of the full body region,
-            "total_size": combined area of body and all elements
-        }
-    """
-    if body_contour is None or not element_contours:
-        raise ValueError("Missing body or elements")
-
-    hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-    height, width = image.shape[:2]
-
-    # ----- Body -----
-    body_mask = np.zeros((height, width), dtype=np.uint8)
-    cv2.drawContours(body_mask, [body_contour], -1, 255, thickness=cv2.FILLED)
-    idx = np.where(body_mask != 0)
-
-    body_color = (
-        np.mean(hsv_image[idx[0], idx[1], 0]) * 2 if idx[0].size > 0 else 0,  # H (rescaled to 0–360)
-        np.mean(hsv_image[idx[0], idx[1], 1]) if idx[0].size > 0 else 0,     # S
-        np.mean(hsv_image[idx[0], idx[1], 2]) if idx[0].size > 0 else 0      # V
-    )
-
-    # ----- Elements -----
-    element_colors, element_sizes, element_centroids = [], [], []
-
-    for cnt in element_contours:
-        # Create a binary mask for the current element
-        mask_ = np.zeros((height, width), dtype=np.uint8)
-        cv2.drawContours(mask_, [cnt], -1, 255, thickness=cv2.FILLED)
-        idx = np.where(mask_ != 0)
-
-        # Average HSV color
-        if idx[0].size > 0:
-            h = np.mean(hsv_image[idx[0], idx[1], 0]) * 2
-            s = np.mean(hsv_image[idx[0], idx[1], 1])
-            v = np.mean(hsv_image[idx[0], idx[1], 2])
-            element_colors.append((h, s, v))
-        else:
-            element_colors.append((0, 0, 0))
-
-        # Contour area
-        area = cv2.contourArea(cnt)
-        element_sizes.append(area)
-
-        # Centroid (normalized)
-        M = cv2.moments(cnt)
-        if M["m00"] != 0:
-            cx = (M["m10"] / M["m00"]) / width
-            cy = (M["m01"] / M["m00"]) / height
-        else:
-            cx, cy = 0, 0
-        element_centroids.append((cx, cy))
-
-    body_size = cv2.contourArea(body_contour)
-    total_size = body_size + sum(element_sizes)
-
-    return {
-        "element_colors": element_colors,
-        "element_sizes": element_sizes,
-        "body_color": body_color,
-        "element_centroids": element_centroids,
-        "body_size": body_size,
-        "total_size": total_size
-    }
-
-def detect_and_contour(image_data: str,
-                       conf_thresh: float = YOLO_CONFIDENCE_THRESHOLD
-                      ) -> tuple[list[list[float]], list[np.ndarray], list[str]]:
-    """
-    Detect objects using YOLOv8 from a base64-encoded image string
-    and construct 4-point contours from each bounding box.
-
-    Process:
-      1. Decodes image from base64 string.
-      2. Performs YOLOv8 object detection.
-      3. Converts boxes to rectangular contours.
+    Identify element contours and the main body from an edge-detected image.
 
     Args:
-        image_data (str): Base64 image string (data URI format).
-        conf_thresh (float): Minimum confidence threshold for detections.
+        edges (np.ndarray): Edge-detected binary image.
 
     Returns:
         tuple:
-            - bboxes (List[List[float]]): Each bounding box as [x1, y1, x2, y2].
-            - element_contours (List[np.ndarray]): 4-point rectangular contours for each box.
-            - detected_labels (List[str]): Class label names for each detection.
+            - elements (list of np.ndarray): Smaller object contours.
+            - body (np.ndarray): The largest detected contour (assumed main body).
     """
-    img = decode_image(image_data)
-    h, w = img.shape[:2]
+    # Find contours from edges
+    contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    # Run YOLOv8 inference
-    detections = run_yolo_detection(img)
-    bboxes = [list(d["bbox"]) for d in detections]
-    labels = [d["label"] for d in detections]
+    if not contours:
+        return [], None
 
-    # Build rectangular contours (clockwise 4-point polygon)
-    contours = []
-    for x1, y1, x2, y2 in bboxes:
-        cnt = np.array([
-            [x1, y1],
-            [x2, y1],
-            [x2, y2],
-            [x1, y2]
-        ], dtype=np.int32).reshape(-1, 1, 2)
-        contours.append(cnt)
+    # Sort contours by area descending
+    contours = sorted(contours, key=cv2.contourArea, reverse=True)
+    
+    body = contours[0]  # Assume largest contour is body
+    elements = contours[1:] if len(contours) > 1 else []
 
-    return bboxes, contours, labels
+    return elements, body
+
+def extract_color_and_size_information(
+    img: np.ndarray,
+    elements: list[np.ndarray],
+    body: np.ndarray
+) -> dict:
+    """
+    Extract color and size metrics from detected elements and body.
+
+    Args:
+        img (np.ndarray): Input BGR image.
+        elements (list of np.ndarray): List of object contours.
+        body (np.ndarray): Body contour.
+
+    Returns:
+        dict: Contains element sizes, colors, centroids, body size, and body color.
+    """
+    # Convert image to HSV color space
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+
+    element_sizes = []
+    element_colors = []
+    element_centroids = []
+
+    # Calculate stats for each element
+    for contour in elements:
+        mask = np.zeros(img.shape[:2], dtype=np.uint8)
+        cv2.drawContours(mask, [contour], -1, 255, thickness=-1)
+
+        # Compute average HSV color
+        mean_color = cv2.mean(hsv, mask=mask)[:3]
+        area = cv2.contourArea(contour)
+
+        M = cv2.moments(contour)
+        if M["m00"] != 0:
+            cx = M["m10"] / M["m00"]
+            cy = M["m01"] / M["m00"]
+        else:
+            cx, cy = 0, 0
+
+        element_sizes.append(area)
+        element_colors.append(mean_color)
+        element_centroids.append((cx / img.shape[1], cy / img.shape[0]))
+
+    # Stats for body
+    mask_body = np.zeros(img.shape[:2], dtype=np.uint8)
+    if body is not None:
+        cv2.drawContours(mask_body, [body], -1, 255, thickness=-1)
+        body_color = cv2.mean(hsv, mask=mask_body)[:3]
+        body_size = cv2.contourArea(body)
+    else:
+        body_color = (0, 0, 0)
+        body_size = 0
+
+    return {
+        "element_sizes": element_sizes,
+        "element_colors": element_colors,
+        "element_centroids": element_centroids,
+        "body_color": body_color,
+        "body_size": body_size
+    }
+
+def detect_and_crop_objects(img: np.ndarray, contours: list[np.ndarray]) -> list[np.ndarray]:
+    """
+    Crop object bounding boxes from an image based on contours.
+
+    Args:
+        img (np.ndarray): Input BGR image.
+        contours (list of np.ndarray): Contour list.
+
+    Returns:
+        list of np.ndarray: Cropped image regions per contour.
+    """
+    cropped_objects = []
+
+    for cnt in contours:
+        x, y, w, h = cv2.boundingRect(cnt)
+
+        # Extract the region of interest (ROI)
+        cropped = img[y:y+h, x:x+w]
+        cropped_objects.append(cropped)
+
+    return cropped_objects

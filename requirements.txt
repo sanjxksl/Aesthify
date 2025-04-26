@@ -1,13 +1,21 @@
-Flask>=2.2.2
-opencv-python>=4.8.0.74
-numpy>=1.24.0
-pandas>=2.0.0
-scikit-learn>=1.2.0
-matplotlib>=3.7.0
-seaborn>=0.12.2
-ultralytics>=8.0.0
-python-dotenv>=1.0.0
-openpyxl>=3.1.0
-scikit-image>=0.19.0
-imageio>=2.27.0
-gunicorn>=20.1.0
+"""
+===============================================================================
+Python Project Dependencies
+===============================================================================
+List of external libraries needed for project execution.
+Install via: pip install -r requirements.txt
+"""
+
+Flask>=2.2.2               # Web framework for server-side apps
+opencv-python>=4.8.0.74    # Computer vision tools
+numpy>=1.24.0              # Numerical computing
+pandas>=2.0.0              # Data analysis and manipulation
+scikit-learn>=1.2.0        # Machine learning algorithms
+matplotlib>=3.7.0          # Plotting and visualization
+seaborn>=0.12.2            # Statistical visualizations
+ultralytics>=8.0.0         # YOLO-based object detection
+python-dotenv>=1.0.0       # Environment variable management
+openpyxl>=3.1.0            # Excel file operations
+scikit-image>=0.19.0       # Image processing
+imageio>=2.27.0            # Input/output for images
+gunicorn>=20.1.0           # Production WSGI HTTP server

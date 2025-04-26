@@ -1,30 +1,37 @@
-# Python
+"""
+===============================================================================
+Git Ignore Configuration
+===============================================================================
+Defines files and folders to exclude from version control.
+Protects sensitive data, reduces clutter, and improves repo hygiene.
+"""
+
+# Python Bytecode and Virtual Environments
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-*.env
 .venv/
 venv/
 env/
 
-# Flask cache
+# Environment Variables
+.env
+
+# Flask Application Files
 instance/
 
-# System files
+# Operating System Files
 .DS_Store
 
-# IDE
+# IDE Configurations
 .vscode/
 .idea/
 
-# Models and results (optional if large)
+# Machine Learning Models and Results
 models/
 results/
 *.egg-info/
 
-# Ignore Jupyter stuff if you ever use
+# Jupyter Notebook Checkpoints
 .ipynb_checkpoints/
-
-# Environment variables
-.env

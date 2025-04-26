@@ -1,12 +1,25 @@
+"""
+===============================================================================
+Setup Script for Project Packaging and Distribution
+===============================================================================
+Manages project metadata, dependencies, and distribution packaging.
+"""
+
 from setuptools import setup, find_packages
 
 setup(
-    name="aesthtify",
-    version="1.0.0",
+    name="aesthify",  # Project name
+    version="1.0.0",   # Version
     description="Aesthetic scoring and layout analysis toolkit for interior spaces",
-    author="Your Name",
-    author_email="your.email@example.com",
-    packages=find_packages(include=["utils", "routes", "interior_analysis", "utils.*", "routes.*"]),
+    author="KSL Sanjana",
+    author_email="sanjxksl@gmail.com",
+    packages=find_packages(include=[
+        "utils", 
+        "routes", 
+        "interior_analysis", 
+        "utils.*", 
+        "routes.*"
+    ]),
     include_package_data=True,
     install_requires=[
         "flask",
@@ -21,7 +34,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'aesthtify=app:main',
+            'aesthify=app:main',
         ],
     },
     classifiers=[

@@ -1,12 +1,14 @@
-
 """
-routes/evaluation.py
+===============================================================================
+Aesthify Evaluation API Endpoint
+===============================================================================
+Provides an API endpoint to score uploaded images aesthetically.
 
-Runs aesthetic scoring on an uploaded image and returns evaluation metrics.
 Accepts:
-    - POST JSON or FormData with 'image_data' (base64)
+- POST request with 'image_data' field (Base64-encoded image).
+
 Returns:
-    - JSON dict of all scores + average aesthetic value
+- JSON containing individual metric scores and an average aesthetic value.
 """
 
 from flask import request, jsonify
@@ -14,12 +16,20 @@ import threading
 import pandas as pd
 import os
 
-from routes import routes  # blueprint
-from utils.main_pipeline import process_top
-from utils.config import RESULTS_DUMP
+from routes import routes  # Blueprint instance
+from utils.main_pipeline import process_top  # Core image processing function
+from utils.config import RESULTS_DUMP  # Path to results storage
+
+# ========== Helper Function ==========
 
 def save_result_to_excel(result, file_path):
-    """Save evaluation results to Excel file (background thread)."""
+    """
+    Save a single evaluation result to an Excel file asynchronously.
+
+    Args:
+        result (dict): Evaluation result dictionary.
+        file_path (str): Path to the Excel file where results will be stored.
+    """
     try:
         image_id = 1
         if os.path.isfile(file_path):
@@ -35,22 +45,34 @@ def save_result_to_excel(result, file_path):
             df = pd.DataFrame.from_records([result])
 
         df.to_excel(file_path, index=False)
-
         print("[DEBUG] Successfully saved result to Excel.")
 
     except Exception as e:
         print(f"[ERROR] Failed to save Excel: {e}")
 
+# ========== API Endpoint ==========
+
 @routes.route('/evaluate', methods=['POST'])
 def evaluate():
+    """
+    POST /evaluate
+    Accepts an uploaded base64-encoded image, processes it, returns aesthetic scores,
+    and saves the results asynchronously.
+
+    Request:
+        - FormData or JSON: { "image_data": "..." }
+
+    Response:
+        - JSON: { <score metrics>, "avg_score": float }
+    """
     try:
-        # Accept base64 image
+        # Retrieve base64 image from form or JSON payload
         image_data = request.form.get('image_data') or request.json.get('image_data')
         if not image_data:
             return jsonify({"error": "Missing 'image_data'"}), 400
 
-        # Check payload size (base64 size)
-        request_size = len(image_data) / (1024 * 1024)  # in MB
+        # Basic payload size validation (maximum 32MB)
+        request_size = len(image_data) / (1024 * 1024)
         if request_size > 32:
             return jsonify({"error": "Image too large"}), 413
 
@@ -60,10 +82,10 @@ def evaluate():
 
         result_copy = result.copy()
 
-        # Save to Excel in background thread
+        # Save evaluation result asynchronously
         threading.Thread(target=save_result_to_excel, args=(result, RESULTS_DUMP)).start()
 
-        # Return result immediately
+        # Return the result immediately
         return jsonify(result_copy)
 
     except Exception as e:

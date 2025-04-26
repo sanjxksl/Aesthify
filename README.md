@@ -1,34 +1,41 @@
-# 🎨 Aesthtify
+# 🎨 aesthify
 
 > **Quantitative Aesthetic Evaluation for Interior Design Layouts**  
 > *Research-grade scoring engine for interior design analysis.*
+
+![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)
+![Flask](https://img.shields.io/badge/Flask-Framework-red.svg)
+![License](https://img.shields.io/badge/License-MIT-green.svg)
 
 ---
 
 ## ✨ Overview
 
-**Aesthtify** is a computer vision-powered framework designed to quantify and evaluate the aesthetic quality of interior design layouts.  
-It blends design theory with modern image processing to deliver structured, data-driven insights into visual balance, harmony, and appeal.
+**aesthify** is a computer vision-powered framework designed to quantify and evaluates the visual aesthetics of images, especially focused on room layouts and interior designs.  
+It uses a combination of deep learning (YOLOv8 + Roboflow) for object detection and a handcrafted quantitative model based on Gestalt principles to score images across seven aesthetic dimensions.
 
 🔎 **Focus Areas**:
 - Symmetry, balance, harmony, simplicity, contrast, unity, proportion
 - Object detection via YOLOv8 and Roboflow APIs
 - Visual contour and edge structure analysis
-- Survey-based validation against human perception (optional)
+- Survey-based validation against human perception (optional), performed for Interior designs, can be applied to different use cases
 
 ---
 
 ## 🛠️ Key Features
 
-- Aesthetic scoring engine covering multiple design principles
-- YOLOv8-based object detection with Roboflow integration
-- Contour clustering and closure analysis
-- Labeled layout visualizations with bounding boxes
-- Survey-based scoring analysis and perception validation
-- Structured exports: CSV reports, Excel dumps, labeled images
-- Plotting modules: scatter plots, bar charts, aesthetic vs perception correlations
-- Modular, editable Python package with `.env` configurations
-- Clean Flask web interface for easy layout evaluations
+- 📷 Upload or capture images directly via the web interface
+- 🧠 Object detection via YOLO and Roboflow models
+- 🖼️ Aesthetic scoring on:
+  - Balance
+  - Proportion
+  - Symmetry
+  - Simplicity
+  - Unity
+  - Contrast
+  - Harmony
+- 📈 Visual analysis and annotation
+- 📝 Survey data analysis and user clustering (optional mode)
 
 ---
 
@@ -51,15 +58,17 @@ It blends design theory with modern image processing to deliver structured, data
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/aesthtify.git
-cd aesthtify
+git clone https://github.com/sanjxksl/aesthify.git
+cd aesthify
 ```
 
-### 2. (Optional) Create a Virtual Environment
+### 2. Create a Virtual Environment
 
 ```bash
 python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
+python -m venv venv
+source venv/bin/activate    # On Unix
+venv\Scripts\activate       # On Windows
 ```
 
 ### 3. Install Dependencies
@@ -74,6 +83,38 @@ Inside project root:
 
 ```env
 ROBOFLOW_API_KEY=your-roboflow-api-key
+```
+✅ (Required only if Roboflow models are enabled.)
+
+---
+
+## 📂 Project Structure
+
+```txt
+aesthify/
+├── app.py               # Flask app entrypoint
+├── utils/                # Core processing utilities
+│   ├── aesthetic_scoring.py
+│   ├── detection_pipeline.py
+│   ├── image_utils.py
+│   ├── main_pipeline.py
+│   └── __init__.py
+├── routes/               # Flask routes
+│   ├── __init__.py
+│   └── evaluation.py
+├── static/               # Frontend assets
+│   ├── styles.css
+│   ├── script.js
+│   └── logo.png
+├── templates/            # HTML templates
+│   └── index.html
+├── models/               # (optional) YOLO models
+├── results/              # Evaluation output files
+├── .env                  # Environment variables
+├── requirements.txt
+├── setup.py
+├── README.md
+└── Procfile              # For production deployment
 ```
 
 ---
@@ -99,48 +140,9 @@ Results automatically saved to `results/evaluation_results_dump.xlsx`.
 
 ---
 
-### 📝 Survey Evaluation and Research Mode
-
-For academic perception vs algorithmic analysis:
-
-```bash
-python -m interior_analysis.survey_analysis
-```
-
-- Loads `.xlsx` survey responses.
-- Evaluates corresponding layout images.
-- Outputs:
-  - CSV files in `/results/csv_outputs/`
-  - Statistical plots in `/results/plots/`
-  - Learned optimal aesthetic weights
-  - Perception vs Computed Score correlations
-
----
-
-## 📂 Project Structure
-
-```plaintext
-aesthtify/
-├── app.py                     # Flask application entry
-├── .env                        # Environment variables
-├── requirements.txt            # Dependency list
-├── setup.py                    # Installable package config
-├── README.md                   # Project documentation
-│
-├── utils/                      # Core logic: scoring, image utilities, config
-├── routes/                     # Flask route blueprints
-├── interior_analysis/          # Survey evaluation and analysis pipeline
-├── models/                     # YOLO model files
-├── results/                    # Evaluation results, plots, csvs
-│   ├── csv_outputs/
-│   └── plots/
-├── templates/                  # Frontend HTML (Jinja2)
-└── static/                     # JavaScript, CSS, assets
-```
-
----
-
 ## 📊 Example Output
+
+> Uploaded Image ➔ Detection ➔ Aesthetic Scores ➔ Labeled Image returned!
 
 | Metric                 | Score  |
 | ----------------------- | ------ |
@@ -151,17 +153,79 @@ aesthtify/
 | Harmony Score           | 0.75   |
 | Final Aesthetic Score   | 0.83   |
 
-Additional outputs:
-- Labeled layout images
+📷 Plus, get an annotated version of the image showing detected objects!
+
+Additional outputs (when you run the interior_analysis/survey_analysis.py):
 - CSV datasets of perception vs algorithmic scores
 - Scatter plots and correlation graphs
 - Best-fit aesthetic weight discovery plots
 
 ---
 
+## 📚 Survey Mode (Optional)
+
+If you have collected user feedback via a survey (Google Forms or similar),  
+you can perform detailed analysis and cluster users based on their aesthetic perception.
+
+---
+
+### 📋 Steps for Survey Mode Setup:
+
+1. **Evaluation Results Preparation**:
+    - Open `evaluation_results_dump.xlsx`
+    - Copy all **calculated evaluation scores**.
+    - Map them correctly to their respective **Image IDs**.
+    - Paste them into `evaluation_results.xlsx` under the correct columns.
+
+2. **Survey Images Organization**:
+    - Save all images shown in your survey into a folder named:
+    ```
+`
+    survey_images/
+    ```
+    - Ensure filenames match the Image IDs used in your evaluation and survey.
+
+3. **Image Mapping Update**:
+    - Open `survey_analysis.py`
+    - Update the `img_map` dictionary with your **new filenames** corresponding to survey IDs.
+
+4. **Survey Results Insertion**:
+    - Collect responses from your Google Form survey.
+    - Download the Google Form results into `survey_results.xlsx`.
+    - Ensure the format (columns/headers) matches expected fields in the analysis script.
+
+    Example:
+    📄 **Google Form Template Reference:**  
+    [Click here to view the Survey Form](https://forms.gle/GEgJ71ow9mbKxjta9)
+
+5. **Run Survey Analysis**:
+```bash
+python survey_analysis.py
+
+---
+
+## 🛰️ Deployment Notes
+
+- Use Gunicorn + Procfile for cloud platforms (Heroku, Render, AWS Elastic Beanstalk)
+- Recommended command:
+```bash
+gunicorn app:app
+```
+
+---
+
+## 📂 Offline Installation & Operation
+
+✅ Aesthify fully supports **offline operation** for sensitive environments.
+
+Please refer to the detailed manual here:  
+📄 [Aesthify Full Offline Setup and Operation Manual (PDF)](Aesthify_Full_Offline_Setup_and_Operation_Manual.pdf)
+
+---
+
 ## 👤 Author
 
-**K S L Sanjana**  
+Developed by **K S L Sanjana**  
 [LinkedIn](https://linkedin.com/in/sanjanaksl) • [Email](mailto:sanjxksl@gmail.com)
 
 ---
@@ -177,8 +241,8 @@ For inquiries, please contact: [sanjxksl@gmail.com]
 
 ## 🙏 Acknowledgements
 
-- YOLOv8 by [Ultralytics](https://github.com/ultralytics/ultralytics)
-- scikit-learn, OpenCV, Pandas libraries
-- Foundational work in design theory and visual perception
+- [YOLOv8 - Ultralytics](https://github.com/ultralytics/ultralytics)
+- [Roboflow Models](https://roboflow.com/)
+- [Hu, Liu, Lu, Guo: A quantitative aesthetic measurement method for product appearance design (2022)](https://doi.org/10.1016/j.aei.2022.101644)
 
 ---

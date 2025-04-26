@@ -1,3 +1,24 @@
+"""
+===============================================================================
+Aesthetic Scoring Functions for Visual Design Layouts
+===============================================================================
+
+This module provides quantitative aesthetic evaluation functions including:
+- Balance
+- Proportion
+- Simplicity
+- Symmetry
+- Unity
+- Contrast
+- Harmony
+
+All formula structures are inspired by:
+Hu, Liu, Lu, Guo. "A quantitative aesthetic measurement method for product appearance design."
+Advanced Engineering Informatics, 2022. [https://doi.org/10.1016/j.aei.2022.101644]
+
+Each scoring function is self-contained, normalized to [0, 1], and safe for production use.
+"""
+
 import numpy as np
 import cv2
 
