@@ -51,33 +51,26 @@ def edge_detect(image):
 
     return edges
 
+import base64
+import cv2
+import numpy as np
+
 def decode_image(image_data: str) -> np.ndarray:
     """
-    Decode a base64-encoded image URI into a BGR OpenCV image.
-
-    Args:
-        image_data (str): Base64 image string (data URI format).
-
-    Returns:
-        np.ndarray: Decoded OpenCV image (BGR).
-
-    Raises:
-        ValueError: If the decoding fails or the image is invalid.
+    Decodes base64 image (optionally prefixed with data URI) to a NumPy array.
+    Handles both "data:image/jpeg;base64,..." and plain base64 strings.
     """
     try:
-        # Strip base64 prefix and decode into bytes
-        b64  = image_data.split(',', 1)[1]
-        data = base64.b64decode(b64)
-
-        # Convert byte stream into OpenCV image
-        arr  = np.frombuffer(data, np.uint8)
-        img  = cv2.imdecode(arr, cv2.IMREAD_COLOR)
-
+        if ',' in image_data:
+            b64 = image_data.split(',', 1)[1]
+        else:
+            b64 = image_data  # fallback for raw base64
+        img_bytes = base64.b64decode(b64)
+        img_array = np.frombuffer(img_bytes, np.uint8)
+        img = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
         if img is None:
-            raise ValueError("decode_image: could not decode image")
-
+            raise ValueError("OpenCV imdecode failed")
         return img
-
     except Exception as e:
         raise ValueError(f"decode_image error: {e}")
 
