@@ -115,7 +115,7 @@ def multi_model_detect(image: np.ndarray) -> list[dict]:
                 detections.append({
                     "bbox": (x1, y1, x2, y2),
                     "label": label,
-                    "conf": float(conf)
+                    "confidence": float(conf)
                 })
 
         except Exception as e:
@@ -140,7 +140,7 @@ def non_max_suppression(detections, iou_threshold=NMS_IOU_THRESHOLD):
 
     # Unpack boxes and scores
     boxes = np.array([det["bbox"] for det in detections])
-    scores = np.array([det["conf"] for det in detections])
+    scores = np.array([det["confidence"] for det in detections])
 
     x1, y1, x2, y2 = boxes[:, 0], boxes[:, 1], boxes[:, 2], boxes[:, 3]
     areas = (x2 - x1 + 1) * (y2 - y1 + 1)
@@ -213,7 +213,7 @@ def resolve_label_conflicts(detections, iou_threshold=NMS_IOU_THRESHOLD):
 
     # Convert to PyTorch tensors
     boxes = [d["bbox"] for d in detections]
-    scores = [d["conf"] for d in detections]
+    scores = [d["confidence"] for d in detections]
 
     if not boxes:
         return []
@@ -236,7 +236,7 @@ def resolve_label_conflicts(detections, iou_threshold=NMS_IOU_THRESHOLD):
             box_j = final[j]["bbox"]
             iou = compute_iou(box_i, box_j)
             if iou > 0.5 and final[i]["label"] != final[j]["label"]:
-                keep = final[i]["conf"] > final[j]["conf"]
+                keep = final[i]["confidence"] > final[j]["confidence"]
         if keep:
             merged.append(final[i])
 
