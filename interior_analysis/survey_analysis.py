@@ -376,13 +376,13 @@ def run_survey_analysis():
         })
 
     # Plot Cluster Distribution
-    fig, ax = plt.subplots(figsize=(6, 4))
+    fig, ax = plt.subplots(figsize=(7, 6))
     labels = [f"Cluster {ci['cluster']}" for ci in cluster_info]
     shares = [ci['share'] for ci in cluster_info]
     bars = ax.bar(labels, shares, color='tab:purple')
 
     for bar, ci in zip(bars, cluster_info):
-        ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 1,
+        ax.text(bar.get_x() + bar.get_width()/2, bar.get_height()+1,
                 ", ".join(ci['top_tags']), ha='center', va='bottom', fontsize=8)
 
     ax.set_ylabel('% of Users')
