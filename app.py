@@ -11,7 +11,7 @@ Note:
 
 from flask import Flask, render_template
 from routes import routes  # Import application routes (Blueprint)
-from utils import *         # Import utility functions
+from utils import __all__        # Import utility functions
 
 # Initialize Flask web application
 app = Flask(__name__)
