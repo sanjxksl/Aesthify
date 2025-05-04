@@ -124,8 +124,9 @@ def run_survey_analysis():
     df_ratings['image_id'] = df_ratings['question'].apply(lambda q: rating_cols.index(q) + 1)
     df_ratings['rating'] = pd.to_numeric(df_ratings['rating'], errors='coerce')
 
-    # --- Aggregate Median User Ratings Per Image ---
-    gagg = df_ratings.groupby('image_id')['rating'].median().reset_index(name='median_rating')
+    # --- Aggregate Mean User Ratings Per Image ---
+    gagg = df_ratings.groupby('image_id')['rating'].mean().reset_index(name='mean_rating')
+    gagg['mean_rating'] = (gagg['mean_rating'] - 1) / 8
 
     # --- Merge with System-Generated Aesthetic Scores ---
     scores = scores.rename(columns={'Image_ID': 'image_id', 'imgId': 'image_id'})
@@ -407,10 +408,7 @@ def run_survey_analysis():
     top_users = user_var.sort_values('var', ascending=False).head(20)['respondent_id']
     df_subset = df_full[df_full['respondent_id'].isin(top_users)].copy()
 
-    # Normalize user ratings
-    df_subset['rating_norm'] = (
-        df_subset['rating'] - df_subset['rating'].min()
-    ) / (df_subset['rating'].max() - df_subset['rating'].min())
+    df_subset['rating_norm'] = (df_subset['rating'] - 1) / 8
 
     # Fit Linear Regression Model
     X = df_subset[factors]
@@ -450,4 +448,3 @@ def run_survey_analysis():
 
 if __name__ == "__main__":
     run_survey_analysis()
-
