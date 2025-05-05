@@ -430,15 +430,25 @@ def run_survey_analysis():
         print(f"{k}: {v:.3f}")
     print(f"\nCorrelation with representative user ratings: r = {r:.2f}, p = {p:.3f}")
 
-    # Plot Prediction vs Actual
     plt.figure(figsize=(6, 4))
-    plt.scatter(df_subset['predicted_rating'], y, alpha=0.6, color='green')
+
+    # Scatter plot
+    plt.scatter(df_subset['predicted_rating'], y, alpha=0.6, color='green', label='User Ratings')
+
+    # Trend line (diagonal if ideal match)
+    z = np.polyfit(df_subset['predicted_rating'], y, 1)
+    p = np.poly1d(z)
+    plt.plot(df_subset['predicted_rating'], p(df_subset['predicted_rating']), "r--", label='Trend Line')
+
+    # Labels and title
     plt.xlabel("Predicted Aesthetic Score (Regression)")
     plt.ylabel("Actual User Rating (Normalized)")
     plt.title("Predicted vs Actual Ratings (Representative Subset)")
+    plt.legend()
     plt.tight_layout()
     plt.savefig(os.path.join(output_dir, "rep_userwise_prediction_vs_actual.png"), dpi=150)
     plt.show()
+
 
     # --- Finalize ---
     f.write("Analysis complete.\n")
