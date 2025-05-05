@@ -166,7 +166,7 @@ Use this mode to:
 5. Run the analysis:
 
 ```bash
-python survey_analysis.py
+python interior_analysis.survey_analysis.py
 ```
 
 Outputs:
