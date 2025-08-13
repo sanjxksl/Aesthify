@@ -1,4 +1,4 @@
-# 🎨 Aesthify
+# Aesthify
 
 > **Perception-Aware Aesthetic Analysis for Interior Layouts**  
 > *An interpretable framework for exploring how people experience design.*
@@ -9,17 +9,17 @@
 
 ---
 
-## ✨ Overview
+## Overview
 
 **Aesthify** is a perception-driven aesthetic analysis tool for evaluating multi-object interior layouts. Rather than predicting what looks good, Aesthify helps you explore how structured design principles—like *Symmetry, Balance, Simplicity,* and *Contrast*—are actually perceived by users.
 
 It combines deep learning-based **object detection** (YOLOv8, Roboflow) with a **rule-based scoring engine** grounded in design theory. Each layout is evaluated across seven visual principles using explainable, quantitative logic.
 
-💡 Aesthify is not a beauty predictor. It's a reflection tool for designers, researchers, and educators to interpret visual structure through the lens of perception.
+> Aesthify is not a beauty predictor. It's a reflection tool for designers, researchers, and educators to interpret visual structure through the lens of perception.
 
 ---
 
-### 🔍 Focus Areas
+### Focus Areas
 
 - Evaluate interior layouts using 7 design principles
 - Detect objects using YOLOv8 or Roboflow models
@@ -29,11 +29,11 @@ It combines deep learning-based **object detection** (YOLOv8, Roboflow) with a *
 
 ---
 
-## 🛠️ Key Features
+## Key Features
 
-- 📷 Upload interior images via web UI  
-- 🧠 Object detection using YOLOv8 or Roboflow  
-- 🖼️ Rule-based scoring on:
+- Upload interior images via web UI  
+- Object detection using YOLOv8 or Roboflow  
+- Rule-based scoring on:
   - Simplicity
   - Balance
   - Symmetry
@@ -41,12 +41,12 @@ It combines deep learning-based **object detection** (YOLOv8, Roboflow) with a *
   - Proportion
   - Contrast
   - Harmony
-- 📈 Visual annotation + score overlay  
-- 🧪 Optional: user survey integration for clustering + correlation analysis
+- Visual annotation + score overlay  
+- Optional: user survey integration for clustering + correlation analysis
 
 ---
 
-## 🧪 Tech Stack
+## Tech Stack
 
 | Component        | Tools                                 |
 |------------------|----------------------------------------|
@@ -60,7 +60,7 @@ It combines deep learning-based **object detection** (YOLOv8, Roboflow) with a *
 
 ---
 
-## 🚀 Setup Instructions
+## Setup Instructions
 
 ### 1. Clone the Repository
 
@@ -93,7 +93,7 @@ ROBOFLOW_API_KEY=your-roboflow-api-key
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ```txt
 aesthify/
@@ -112,7 +112,7 @@ aesthify/
 
 ---
 
-## 📈 Running the App
+## Running the App
 
 ```bash
 python app.py
@@ -130,7 +130,7 @@ You can:
 
 ---
 
-## 📊 Example Output
+## Example Output
 
 | Metric                | Score |
 | --------------------- | ----- |
@@ -145,7 +145,7 @@ You can:
 
 ---
 
-## 📚 Survey Mode (Optional)
+## Survey Mode (Optional)
 
 Aesthify supports user study integration for analyzing how real people perceive different layouts.
 
@@ -157,7 +157,7 @@ Use this mode to:
 
 ---
 
-### 📝 Survey Setup
+### Survey Setup
 
 1. Add computed scores to `evaluation_results.xlsx`
 2. Add survey images to `survey_images/`
@@ -177,7 +177,7 @@ Outputs:
 
 ---
 
-## 🛰️ Deployment Notes
+## Deployment Notes
 
 Use Gunicorn for production deployment:
 
@@ -189,23 +189,21 @@ Supports Render, Heroku, or AWS EB with included `Procfile`.
 
 ---
 
-## 🖥️ Offline Support
+## Offline Support
 
 Aesthify is fully offline-capable for secure or demo environments.
 Refer to the [Offline Setup Manual (PDF)](Aesthify_Full_Offline_Setup_and_Operation_Manual.pdf).
 
 ---
 
-## 👩‍🎓 Author
+## Author
 
 Built by **K S L Sanjana**
 [LinkedIn](https://linkedin.com/in/sanjanaksl) • [Email](mailto:sanjxksl@gmail.com)
 
 ---
 
-## 📄 License
-
-MIT License (Academic use only)
+## License
 
 For research use and academic exploration.
 Contact the author for commercial licensing or integration queries.
